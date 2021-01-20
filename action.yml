@@ -1,13 +1,32 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'SFTP Read Write Lock'
+description: 'Download/upload a file from an SFTP server, with read/write locks'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  host:
+    description: "sftp host url"
     required: true
-    default: '1000'
-outputs:
-  time: # output will be available to future steps
-    description: 'The message to output'
+  port:
+    description: "sftp port"
+    required: false
+    default: "22"
+  username:
+    description: "sftp username"
+    required: true
+  private_key:
+    description: "sftp private key"
+    required: true
+  lock_file_dir:
+    description: "lock file directory"
+    required: true
+  remote_path:
+    description: "file to read/write on the sftp server"
+    required: true
+  local_path:
+    description: "local path to store the remote file"
+    required: true
+  write:
+    description: "If the file should be stored back onto the SFTP server"
+    required: false
 runs:
   using: 'node12'
-  main: 'dist/index.js'
+  main: 'dist/main/index.js'
+  post: 'dist/post/index.js'

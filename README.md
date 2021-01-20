@@ -1,116 +1,45 @@
-# Create a JavaScript Action
+# SFTP Read Write Lock
 
-<p align="center">
-  <a href="https://github.com/actions/javascript-action/actions"><img alt="javscript-action status" src="https://github.com/actions/javascript-action/workflows/units-test/badge.svg"></a>
-</p>
+Download files from an SFTP server, modify them and upload them again with safe read-write locks.
 
-Use this template to bootstrap the creation of a JavaScript action.:rocket:
+## How it works
 
-This template includes tests, linting, a validation workflow, publishing, and versioning guidance.
+The action creates a new file in the lock dir with a random uuid, with read/write.lock.
+`/tmp/lock-dir/da4da92e-53ea-47d2-ad40-19b184203e7f.read.lock`.
+It then reads the dir to see if any other lock files exist in there, sorting them based on creation time.
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+If we have requested a read lock, and before us is no other write lock, then we can proceed safely.
+If we have requested a write lock, then we must be the first item in the list to proceed safely.
+In any other case, we wait a random number of seconds (5-10) before checking the list again.
+Once it's safe for us to proceed, we download the file.
 
-## Create an action from this template
+Once the workflow is done, a cleanup step is run to upload the file if requested, then to delete the lock file.
 
-Click the `Use this Template` and provide the new repo details for your action
+## Example
 
-## Code in Main
+Download the file at `/var/some/file.txt` to `file.txt` as readonly
 
-Install the dependencies
-
-```bash
-npm install
-```
-
-Run the tests :heavy_check_mark:
-
-```bash
-$ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-...
-```
-
-## Change action.yml
-
-The action.yml defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-const core = require('@actions/core');
-...
-
-async function run() {
-  try {
-      ...
-  }
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Package for distribution
-
-GitHub Actions will run the entry point from the action.yml. Packaging assembles the code into one file that can be checked in to Git, enabling fast and reliable execution and preventing the need to check in node_modules.
-
-Actions are run from GitHub repos.  Packaging the action will create a packaged action in the dist folder.
-
-Run prepare
-
-```bash
-npm run prepare
-```
-
-Since the packaged index.js is run from the dist folder.
-
-```bash
-git add dist
-```
-
-## Create a release branch
-
-Users shouldn't consume the action from master since that would be latest code and actions can break compatibility between major versions.
-
-Checkin to the v1 release branch
-
-```bash
-git checkout -b v1
-git commit -a -m "v1 release"
-```
-
-```bash
-git push origin v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket:
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Usage
-
-You can now consume the action by referencing the v1 branch
-
-```yaml
-uses: actions/javascript-action@v1
+```yml
+uses: conradludgate/sftp-rw-lock-action@v1
 with:
-  milliseconds: 1000
+  host: ssh.example.com
+  username: user
+  private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+  lock_file_dir: "/tmp/example-lock/"
+  remote_path: "/var/some/file.txt"
+  local_path: "file.txt"
 ```
 
-See the [actions tab](https://github.com/actions/javascript-action/actions) for runs of this action! :rocket:
+Download the file at `/var/some/file.txt` to `file.txt` as writeable
+
+```yml
+uses: conradludgate/sftp-rw-lock-action@v1
+with:
+  host: ssh.example.com
+  username: user
+  private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+  lock_file_dir: "/tmp/example-lock/"
+  remote_path: "/var/some/file.txt"
+  local_path: "file.txt"
+  write: true
+```
