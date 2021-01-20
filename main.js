@@ -53,7 +53,7 @@ async function run() {
       host: core.getInput('host', { required: true }),
       port: core.getInput('port') || 22,
       username: core.getInput('username', { required: true }),
-      privateKey: core.getInput('privateKey', { required: true }),
+      privateKey: core.getInput('private_key', { required: true }),
     });
 
     const write = !!core.getInput('write');

@@ -26807,7 +26807,7 @@ async function run() {
       host: core.getInput('host', { required: true }),
       port: core.getInput('port', { required: true }),
       username: core.getInput('username', { required: true }),
-      privateKey: core.getInput('privateKey', { required: true }),
+      privateKey: core.getInput('private_key', { required: true }),
     });
 
     const lockFileDir = core.getInput('lock_file_dir', { required: true });
