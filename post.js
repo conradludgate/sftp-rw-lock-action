@@ -26,11 +26,12 @@ async function run() {
       const remote_path = core.getInput('remote_path', { required: true });
       const local_path = core.getInput('local_path', { required: true });
 
-      await sftp.put(local_path, remote_path);
+      await sftp.fastPut(local_path, remote_path);
     }
 
     core.info("deleting lock file");
     await sftp.delete(`${lockFileDir}/${lockFile}`);
+    await sftp.end();
   } catch (error) {
     core.setFailed(error.message);
   }

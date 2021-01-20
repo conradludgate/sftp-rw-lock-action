@@ -80,7 +80,8 @@ async function run() {
     const remote_path = core.getInput('remote_path', { required: true });
     const local_path = core.getInput('local_path', { required: true });
     core.info(`getting file ${remote_path} => ${local_path}`);
-    await sftp.get(remote_path, local_path);
+    await sftp.fastGet(remote_path, local_path);
+    await sftp.end();
   } catch (error) {
     core.setFailed(error.message);
   }
